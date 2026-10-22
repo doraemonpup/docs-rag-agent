@@ -1,11 +1,14 @@
 import requests
 from langchain_core.documents import Document
-from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DOCS_BASE = "https://docs.langchain.com"
-
 DOC_PATHS = [
     "oss/python/langchain/agents",
     "oss/python/deepagents/rag",
@@ -48,6 +51,38 @@ print(f"Loaded {len(docs)} documentation pages.")
 # print(f"Total characters: {total_chars}")
 # print(docs[0].page_content[:500])
 
+# Split documents
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 all_splits = text_splitter.split_documents(docs)
 print(f"Split documentation into {len(all_splits)} chunks.")
+
+# Create embeddings model
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-mpnet-base-v2",
+    encode_kwargs={"normalize_embeddings": True}
+)
+
+# Create vector database
+index_name = "vector-langchain"
+pc = Pinecone()
+pc.create_index(
+    name=index_name,
+    dimension=768,
+    metric="cosine",
+    spec=ServerlessSpec(
+        cloud="aws",
+        region="us-east-1",
+    )
+)
+
+index = pc.Index(index_name)
+
+# Create vector store
+vector_store = PineconeVectorStore(
+    embedding=embeddings,
+    index=index
+)
+
+# Index the chunks
+vector_store.add_documents(documents=all_splits)
+print(f"Indexed {len(all_splits)} chunks.")
