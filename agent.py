@@ -47,3 +47,7 @@ print(f"Loaded {len(docs)} documentation pages.")
 # total_chars = sum(len(doc.page_content) for doc in docs)
 # print(f"Total characters: {total_chars}")
 # print(docs[0].page_content[:500])
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+all_splits = text_splitter.split_documents(docs)
+print(f"Split documentation into {len(all_splits)} chunks.")
