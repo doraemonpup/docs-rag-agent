@@ -1,4 +1,5 @@
 import requests
+import time
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
@@ -71,17 +72,30 @@ embeddings = HuggingFaceEmbeddings(
 # Create vector database
 index_name = "vector-langchain"
 pc = Pinecone()
-pc.create_index(
-    name=index_name,
-    dimension=768,
-    metric="cosine",
-    spec=ServerlessSpec(
-        cloud="aws",
-        region="us-east-1",
+
+existing_indexes = pc.list_indexes().names()
+
+if index_name not in existing_indexes:
+    print(f"Creating Pinecone index: {index_name}")
+
+    pc.create_index(
+        name=index_name,
+        dimension=768,
+        metric="cosine",
+        spec=ServerlessSpec(
+            cloud="aws",
+            region="us-east-1",
+        )
     )
-)
+else:
+    print(f"Index {index_name} already exists.")
+
+# Wait until the index is ready
+while not pc.describe_index(index_name).status['ready']:
+    time.sleep(1)
 
 index = pc.Index(index_name)
+print(f"Connected to Pinecone index: {index_name}")
 
 # Create vector store
 vector_store = PineconeVectorStore(
