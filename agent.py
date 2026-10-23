@@ -9,6 +9,7 @@ from deepagents.backends import StateBackend
 from langchain.tools import tool
 from deepagents import create_deep_agent
 from langchain.chat_models import init_chat_model
+from langchain.messages import HumanMessage
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -201,7 +202,10 @@ chunk_analyst_subagent = {
     "system_prompt": CHUNK_ANALYST_INSTRUCTIONS,
 }
 
-model = init_chat_model(model='openrouter:openrouter/free')
+model = init_chat_model(
+    model='z-ai/glm-5.3-flash',
+    model_provider='openrouter'
+) # openrouter/free
 
 agent = create_deep_agent(
     model=model,
@@ -210,3 +214,15 @@ agent = create_deep_agent(
     system_prompt=INSTRUCTIONS,
     subagents=[chunk_analyst_subagent]
 )
+
+# Run the RAG agent
+EXAMPLE_QUERY = "How do I stream intermediate tool results from a subagent?"
+
+if __name__ == "__main__":
+    result = agent.invoke(
+        {"messages": [HumanMessage(content=EXAMPLE_QUERY)]}
+    )
+
+    for msg in result.get("messages", []):
+        if msg.text:
+            print(msg.text)
