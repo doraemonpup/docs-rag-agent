@@ -78,13 +78,9 @@ chunk_analyst_subagent = {
     "system_prompt": CHUNK_ANALYST_INSTRUCTIONS,
 }
 
-# Uncomment, if using the OpenRouter's model
-# model = init_chat_model(
-#     model='openrouter:z-ai/glm-5.3-flash',
-# )
-
+# OpenRouter's model || OpenAI's model
 model = init_chat_model(
-    model='openai:gpt-5-nano',
+    model='openrouter:openrouter/free', # openai:gpt-5-nano
 )
 
 agent = create_deep_agent(
