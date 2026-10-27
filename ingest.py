@@ -42,7 +42,7 @@ DOC_PATHS = [
 ]
 
 # Shared configuration — agent.py imports these so both files stay in sync.
-INDEX_NAME = "vector-langchain"
+INDEX_NAME = "langchain-docs"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 EMBEDDING_DIMENSION = 768
 CHUNK_SIZE = 1000
